@@ -3,11 +3,12 @@ module HCL
     attr_accessor :main_route
     attr_accessor :stdx
     attr_accessor :stdy
+    attr_accessor :style
     def initialize(viewport);super(viewport);@t = 0;end
     def update
-      if @t >= @main_route.xsize;self.x=self.y=-256;return;end
-      self.x=@stdx+@main_route[@t,0]
-      self.y=@stdy+@main_route[@t,1]
+      if @t >= @main_route.ysize;self.x=self.y=-256;return;end
+      self.x=@stdx+@main_route[@style,@t,0]
+      self.y=@stdy+@main_route[@style,@t,1]
       @t+=1
       super
     end
@@ -18,10 +19,7 @@ module HCL
   def self.command_damage(w)
     
   end
-  def self.circle(x,y,route) 
-    (0..360).each{|w|self.fire(x,y,route+"_#{w}")}
-  end 
-  def self.fire(x,y,route)
+  def self.fire(x,y,route,style)
     return unless $scene.is_a?(Scene_Map)
     r = @cache[route]
     sprite = HCL::Particle.new($scene.spriteset.viewport1)
