@@ -4,7 +4,7 @@ module HCL
     attr_accessor :stdx
     attr_accessor :stdy
     attr_accessor :style
-    def initialize(viewport);super(viewport);@t = 0;end
+    def initialize(viewport);super(viewport);@t=0;end
     def update
       if @t >= @main_route.ysize;self.x=self.y=-256;return;end
       self.x=@stdx+@main_route[@style,@t,0]
@@ -16,7 +16,7 @@ module HCL
     def realy;return ((self.y - 32) * 4 - 3 + $game_map.display_y);end
   end
   def self.bullets;return @bullet;end
-  def self.command_damage(w)
+  def self.command_damage(w,event)
     
   end
   def self.fire(x,y,route,style)
@@ -40,11 +40,11 @@ module HCL
       d = $game_map.passable2?((w.realx/128.0).round, (w.realy/128.0).round)
       (w.x<0||w.y<0||w.x>640||w.y>480||!d) ? w.dispose : @cursor[w.x][w.y].push(w)
     end
-    for event in $game_map.events.values
+    for event in $game_map.events.values+[$game_player]
       a = event.screen_x
       b = event.screen_y
       w = @cursor[event.screen_x][event.screen_y] unless a<0||a>640||b<0||b>480
-      self.command_damage(w) if w
+      self.command_damage(w,event) if w
     end
     @bullet.delete_if {|w| w.disposed? }
   end
