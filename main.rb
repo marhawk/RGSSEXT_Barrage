@@ -29,6 +29,7 @@ module HCL
     sprite.ox = sprite.bitmap.width / 2
     sprite.oy = sprite.bitmap.height
     sprite.main_route = r[1]
+    sprite.style = style
     @bullet.push(sprite)
   end
   def self.update
@@ -55,10 +56,12 @@ module HCL
     f = File.open(io,"wb")
     @cache = Hash.new
     $data_routes.each do |key, value|
-      table = Table.new(value[3]+1,2)
-      (0..value[3]).each do |w|
-        eval("table[w,0]="+value[1])
-        eval("table[w,1]="+value[2])
+      table = Table.new(value[4].size,value[3]+1,2)
+      value[4].each do |s|
+        (0..value[3]).each do |w|
+          eval("table[s,w,0]="+value[1])
+          eval("table[s,w,1]="+value[2])
+        end
       end
       @cache[key] = [value[0],table]
     end
