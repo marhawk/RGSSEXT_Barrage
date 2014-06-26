@@ -130,7 +130,7 @@ class Game_Player
   def update
     self_update
     if Input.press?(Input::A)
-      HCL.fire(screen_x,screen_y,"origin_#{rand(4)*2+2}")
+      HCL.fire(screen_x,screen_y,"origin",rand(360))
     end
   end
 end
