@@ -56,7 +56,7 @@ module HCL
     f = File.open(io,"wb")
     @cache = Hash.new
     $data_routes.each do |key, value|
-      table = Table.new(value[4].size,value[3]+1,2)
+      table = Table.new(value[4].last-value[4].first,value[3]+1,2)
       value[4].each do |s|
         (0..value[3]).each do |w|
           eval("table[s,w,0]="+value[1])
