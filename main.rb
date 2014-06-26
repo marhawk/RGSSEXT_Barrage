@@ -19,7 +19,7 @@ module HCL
     
   end
   def self.circle(x,y,route) 
-    (0..45).each{|w|self.fire(x,y,route+"_#{w}")}
+    (0..360).each{|w|self.fire(x,y,route+"_#{w}")}
   end 
   def self.fire(x,y,route)
     return unless $scene.is_a?(Scene_Map)
