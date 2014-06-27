@@ -186,6 +186,7 @@ class Scene_Map    ;attr_accessor :spriteset;end
 class Spriteset_Map;attr_accessor :viewport1;end
 class Game_Event   ;attr_accessor :id       ;end
 class Game_Player
+  attr_accessor :slow
   def update
     unless $game_system.map_interpreter.running? or
            @move_route_forcing or $game_temp.message_window_showing
@@ -203,17 +204,24 @@ class Game_Player
         check_event_trigger_here([0])
         check_event_trigger_there([0,1,2])
       end
+      if Input.press?(Input::Ctrl)
+        @character_name = "001-Fighter01_s"
+        @slow = true
+      else
+        @character_name = "001-Fighter01_f"
+        @slow = false
+      end
       if Input.press?(Input::A)
         if $hcl.imp(1)
           $hcl.fire(screen_x,screen_y,"origin",270,0)
-          $hcl.fire(screen_x-2,screen_y,"origin",270,0)
-          $hcl.fire(screen_x+2,screen_y,"origin",270,0)
+          $hcl.fire(screen_x-6,screen_y,"origin",270,0)
+          $hcl.fire(screen_x+6,screen_y,"origin",270,0)
         end
       end
     end
     a,b = Mouse.pos
-    @real_x = (a - 16) * 4 - 3 + $game_map.display_x
-    @real_y = (b - 32) * 4 - 3 + $game_map.display_y
+    @real_x = ([[a,0].max,640].min - 16) * 4 - 3 + $game_map.display_x
+    @real_y = ([[b,0].max,480].min - 32) * 4 - 3 + $game_map.display_y
     super
   end        
   def update_move
