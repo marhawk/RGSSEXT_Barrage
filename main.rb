@@ -189,7 +189,9 @@ class Game_Player
         check_event_trigger_there([0,1,2])
       end
       if Input.press?(Input::A)
-        HCL.fire(screen_x,screen_y,"origin",rand(4)*90,0)
+        HCL.fire(screen_x,screen_y,"origin",270,0)
+        HCL.fire(screen_x-2,screen_y,"origin",270,0)
+        HCL.fire(screen_x+2,screen_y,"origin",270,0)
       end
     end
     a,b = Mouse.pos
