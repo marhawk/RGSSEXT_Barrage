@@ -20,7 +20,7 @@ $data_routes = {
   150,
   (0..360).to_a,
   ["s2=s","s2=(s2+1)%360"],
-               ],
+               ]
   
 }
 $data_emitter = {
