@@ -37,13 +37,14 @@ module HCL
   end
   def self.bullets;return @bullet;end
   def self.command_damage(w,event)
-    w.each do |k|
-      if event.is_a?(Game_Player) && k.standpoint == 1
-        $scene = Scene_Gameover.new end
-      if event.is_a?(Game_Event) && k.standpoint == 0
-        $game_self_switches[[$game_map.map_id,event.id,'A']] = true
-        $game_map.need_refresh = true
-      end
+    if event.is_a?(Game_Player) && w.standpoint == 1
+      Graphics.update
+      $scene = Scene_Gameover.new
+    end
+    if event.is_a?(Game_Event) && w.standpoint == 0
+      Graphics.update
+      $game_self_switches[[$game_map.map_id,event.id,'A']] = true
+      $game_map.need_refresh = true
     end
   end
   def self.superfire(x,y,route,emitter,standpoint)
@@ -65,17 +66,20 @@ module HCL
   end
   def self.update
     @bullet = [] if @bullet == nil
-    @cursor = Array.new(641){Array.new(481,[])}
+    @cursor = Array.new(641){Array.new(481,nil)}
     @bullet.each do |w|
       w.update
       d = $game_map.passable2?((w.realx/128.0).round, (w.realy/128.0).round)
-      (w.x<0||w.y<0||w.x>640||w.y>480||!d) ? w.dispose : @cursor[w.x][w.y].push(w)
+      if w.x<0||w.y<0||w.x>640||w.y>480||!d then w.dispose
+      else unless @cursor[w.x][w.y] then @cursor[w.x][w.y] = w
+      else unless @cursor[w.x][w.y].standpoint == 0 then @cursor[w.x][w.y] = w
+      end  end end
     end
     for event in $game_map.events.values+[$game_player]
       a = event.screen_x
       b = event.screen_y
-      w = @cursor[event.screen_x][event.screen_y] unless a<0||a>640||b<0||b>480
-      self.command_damage(w,event) if w
+      w = @cursor[a][b] unless a<0||a>640||b<0||b>480
+      self.command_damage(w,event) unless w == nil
     end
     @bullet.delete_if {|w| w.disposed? }
   end
