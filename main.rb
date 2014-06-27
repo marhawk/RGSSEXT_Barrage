@@ -2,6 +2,7 @@ module Mouse
   GetCursorPos = Win32API.new("user32", "GetCursorPos", 'p', 'i')
   ScreenToClient = Win32API.new("user32", "ScreenToClient", 'ip', 'i')
   GetActiveWindow = Win32API.new("user32", "GetActiveWindow", nil, 'l')
+  ShowCursor = Win32API.new("user32", "ShowCursor", 'i', 'l')
   Window_HWND = GetActiveWindow.call
   def self.pos
     point_var = [0, 0].pack('ll')
@@ -17,6 +18,7 @@ module Mouse
     end
   end
 end
+Mouse::ShowCursor.call(0)
 module HCL
   class Particle < RPG::Sprite
     attr_accessor :main_route
@@ -204,7 +206,7 @@ class Game_Player
         check_event_trigger_here([0])
         check_event_trigger_there([0,1,2])
       end
-      if Input.press?(Input::Ctrl)
+      if Input.press?(Input::CTRL)
         @character_name = "001-Fighter01_s"
         @slow = true
       else
