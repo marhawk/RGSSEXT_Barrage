@@ -35,8 +35,10 @@ module HCL
     def realx;return ((self.x - 16) * 4 - 3 + $game_map.display_x);end
     def realy;return ((self.y - 32) * 4 - 3 + $game_map.display_y);end
   end
-  def self.bullets;return @bullet;end
-  def self.command_damage(w,event)
+end
+class HCl
+  def bullets;return @bullet;end
+  def command_damage(w,event)
     if event.is_a?(Game_Player) && w.standpoint == 1
       Graphics.update
       $scene = Scene_Gameover.new
@@ -47,10 +49,13 @@ module HCL
       $game_map.need_refresh = true
     end
   end
-  def self.superfire(x,y,route,emitter,standpoint)
+  def imp(d)
+    return @imp % (@im[d]) <= d
+  end
+  def superfire(x,y,route,emitter,standpoint)
     eval(sprintf(@emitter[emitter],x,y))
   end
-  def self.fire(x,y,route,style,standpoint)
+  def fire(x,y,route,style,standpoint)
     return unless $scene.is_a?(Scene_Map)
     r = @cache[route]
     sprite = HCL::Particle.new($scene.spriteset.viewport1)
@@ -64,8 +69,14 @@ module HCL
     sprite.standpoint = standpoint
     @bullet.push(sprite)
   end
-  def self.update
-    @bullet = [] if @bullet == nil
+  def initialize
+    @imp = 0
+    @im  = [1,6,60,120,150]
+    @bullet = []
+  end
+  def update
+    @imp = 0 if @imp == 65535
+    @imp += 1
     @cursor = Array.new(641){Array.new(481,nil)}
     @bullet.each do |w|
       w.update
@@ -79,15 +90,15 @@ module HCL
       a = event.screen_x
       b = event.screen_y
       w = @cursor[a][b] unless a<0||a>640||b<0||b>480
-      self.command_damage(w,event) unless w == nil
+      command_damage(w,event) unless w == nil
     end
     @bullet.delete_if {|w| w.disposed? }
   end
-  def self.loadcache(w)
+  def loadcache(w)
     f=File.open(w,"rb");@cache=Marshal.load(f);f.close
     @cache.each{|key, value|@cache[key] = [Bitmap.new(value[0]),value[1]]}
   end
-  def self.makecache(io = nil)
+  def makecache(io = nil)
     f = File.open(io,"wb") if io
     @cache = Hash.new
     $data_routes.each do |key, value|
@@ -104,19 +115,20 @@ module HCL
     f.close if io
     @cache.each{|key, value|@cache[key] = [Bitmap.new(value[0]),value[1]]}
   end
-  def self.loademitter(w)
+  def loademitter(w)
     f=File.open(w,"rb");@emitter=Marshal.load(f);f.close
   end
-  def self.makeemitter(io)
+  def makeemitter(io)
     f = File.open(io,"wb") if io
     @emitter = $data_emitter
     Marshal.dump(@emitter,f) if io
     f.close if io
   end
 end
+$hcl = HCl.new
 class Game_Map
   if @self_alias == nil;alias self_update update;@self_alias = true;end
-  def update;HCL.update;self_update;end
+  def update;$hcl.update;self_update;end
   def passable2?(x,y)
     return false unless valid?(x, y)
     for i in [2, 1, 0]
@@ -129,40 +141,40 @@ class Game_Map
   def scroll_down(distance)
     d = @display_y + distance - (self.height - 15) * 128
     if d <= 0
-      HCL.bullets.each{|w|w.stdy = w.stdy - distance/4}
+      $hcl.bullets.each{|w|w.stdy = w.stdy - distance/4}
       @display_y = @display_y + distance
     else
-      HCL.bullets.each{|w|w.stdy = w.stdy - (distance-d)/4}
+      $hcl.bullets.each{|w|w.stdy = w.stdy - (distance-d)/4}
       @display_y = (self.height - 15) * 128
     end
   end
   def scroll_left(distance)
     d = @display_x - distance
     if d >= 0
-      HCL.bullets.each{|w|w.stdx = w.stdx + distance/4}
+      $hcl.bullets.each{|w|w.stdx = w.stdx + distance/4}
       @display_x = @display_x - distance
     else
-      HCL.bullets.each{|w|w.stdx = w.stdx - @display_x/4}
+      $hcl.bullets.each{|w|w.stdx = w.stdx - @display_x/4}
       @display_x = 0
     end
   end
   def scroll_right(distance)
     d = @display_x + distance - (self.width - 20) * 128
     if d <= 0
-      HCL.bullets.each{|w|w.stdx = w.stdx - distance/4}
+      $hcl.bullets.each{|w|w.stdx = w.stdx - distance/4}
       @display_x = @display_x + distance
     else
-      HCL.bullets.each{|w|w.stdx = w.stdx - (distance-d)/4}
+      $hcl.bullets.each{|w|w.stdx = w.stdx - (distance-d)/4}
       @display_x = (self.width - 20) * 128
     end
   end
   def scroll_up(distance)
     d = @display_y - distance
     if d >= 0
-      HCL.bullets.each{|w|w.stdy = w.stdy + distance/4}
+      $hcl.bullets.each{|w|w.stdy = w.stdy + distance/4}
       @display_y = @display_y - distance
     else
-      HCL.bullets.each{|w|w.stdy = w.stdy - @display_y/4}
+      $hcl.bullets.each{|w|w.stdy = w.stdy - @display_y/4}
       @display_y = 0
     end
   end
@@ -189,9 +201,11 @@ class Game_Player
         check_event_trigger_there([0,1,2])
       end
       if Input.press?(Input::A)
-        HCL.fire(screen_x,screen_y,"origin",270,0)
-        HCL.fire(screen_x-2,screen_y,"origin",270,0)
-        HCL.fire(screen_x+2,screen_y,"origin",270,0)
+        if $hcl.imp(1)
+          $hcl.fire(screen_x,screen_y,"origin",270,0)
+          $hcl.fire(screen_x-2,screen_y,"origin",270,0)
+          $hcl.fire(screen_x+2,screen_y,"origin",270,0)
+        end
       end
     end
     a,b = Mouse.pos
