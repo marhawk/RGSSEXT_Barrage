@@ -17,7 +17,6 @@ module Mouse
     end
   end
 end
-
 module HCL
   class Particle < RPG::Sprite
     attr_accessor :main_route
@@ -37,7 +36,6 @@ module HCL
     def realy;return ((self.y - 32) * 4 - 3 + $game_map.display_y);end
   end
 end
-
 class HCl
   def bullets;return @bullet;end
   def command_damage(w,event)
@@ -65,7 +63,7 @@ class HCl
     sprite.stdy = sprite.y = y
     sprite.bitmap = r[0]
     sprite.ox = sprite.bitmap.width / 2
-    sprite.oy = sprite.bitmap.height
+    sprite.oy = sprite.bitmap.height / 2
     sprite.main_route = r[1]
     sprite.style = style
     sprite.standpoint = standpoint
@@ -83,15 +81,18 @@ class HCl
     @bullet.each do |w|
       w.update
       d = $game_map.passable2?((w.realx/128.0).round, (w.realy/128.0).round)
-      if w.x<0||w.y<0||w.x>640||w.y>480||!d then w.dispose
-      else unless @cursor[w.x][w.y] then @cursor[w.x][w.y] = w
-      else unless @cursor[w.x][w.y].standpoint == 0 then @cursor[w.x][w.y] = w
-      end  end end
+      if w.x<0||w.y<0||w.x>=640||w.y>=480||!d then w.dispose
+      else
+        unless @cursor[w.x  ][w.y  ] then @cursor[w.x  ][w.y  ] = w end
+        unless @cursor[w.x+1][w.y  ] then @cursor[w.x+1][w.y  ] = w end
+        unless @cursor[w.x  ][w.y+1] then @cursor[w.x  ][w.y+1] = w end
+        unless @cursor[w.x+1][w.y+1] then @cursor[w.x+1][w.y+1] = w end
+      end
     end
     for event in $game_map.events.values+[$game_player]
       a = event.screen_x
       b = event.screen_y
-      w = @cursor[a][b] unless a<0||a>640||b<0||b>480
+      w = @cursor[a][b] unless a<0||a>=640||b<0||b>=480
       command_damage(w,event) unless w == nil
     end
     @bullet.delete_if {|w| w.disposed? }
@@ -128,7 +129,6 @@ class HCl
   end
 end
 $hcl = HCl.new
-
 class Game_Map
   if @self_alias == nil;alias self_update update;@self_alias = true;end
   def update;$hcl.update;self_update;end
@@ -182,11 +182,9 @@ class Game_Map
     end
   end
 end
-
 class Scene_Map    ;attr_accessor :spriteset;end
 class Spriteset_Map;attr_accessor :viewport1;end
 class Game_Event   ;attr_accessor :id       ;end
-  
 class Game_Player
   def update
     unless $game_system.map_interpreter.running? or
@@ -225,6 +223,49 @@ class Game_Player
       @anime_count += 1.5
     elsif @step_anime
       @anime_count += 1
+    end
+  end
+end
+class Sprite_Character < RPG::Sprite
+  def update
+    super
+    if @tile_id != @character.tile_id or
+       @character_name != @character.character_name or
+       @character_hue != @character.character_hue
+      @tile_id = @character.tile_id
+      @character_name = @character.character_name
+      @character_hue = @character.character_hue
+      if @tile_id >= 384
+        self.bitmap = RPG::Cache.tile($game_map.tileset_name,
+          @tile_id, @character.character_hue)
+        self.src_rect.set(0, 0, 32, 32)
+        self.ox = 16
+        self.oy = 32
+      else
+        self.bitmap = RPG::Cache.character(@character.character_name,
+          @character.character_hue)
+        @cw = bitmap.width / 4
+        @ch = bitmap.height / 4
+        self.ox = @cw / 2
+        self.oy = @ch / 2
+      end
+    end
+    self.visible = (not @character.transparent)
+    if @tile_id == 0
+      sx = @character.pattern * @cw
+      sy = (@character.direction - 2) / 2 * @ch
+      self.src_rect.set(sx, sy, @cw, @ch)
+    end
+    self.x = @character.screen_x
+    self.y = @character.screen_y
+    self.z = @character.screen_z(@ch)
+    self.opacity = @character.opacity
+    self.blend_type = @character.blend_type
+    self.bush_depth = @character.bush_depth
+    if @character.animation_id != 0
+      animation = $data_animations[@character.animation_id]
+      animation(animation, true)
+      @character.animation_id = 0
     end
   end
 end
