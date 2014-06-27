@@ -19,6 +19,9 @@ module HCL
   def self.command_damage(w,event)
     
   end
+  def self.superfire(x,y,route,emitter)
+    eval(sprintf(@emitter[emitter],x,y))
+  end
   def self.fire(x,y,route,style)
     return unless $scene.is_a?(Scene_Map)
     r = @cache[route]
@@ -52,8 +55,8 @@ module HCL
     f=File.open(w,"rb");@cache=Marshal.load(f);f.close
     @cache.each{|key, value|@cache[key] = [Bitmap.new(value[0]),value[1]]}
   end
-  def self.makecache(io)
-    f = File.open(io,"wb")
+  def self.makecache(io = nil)
+    f = File.open(io,"wb") if io
     @cache = Hash.new
     $data_routes.each do |key, value|
       table = Table.new(value[4].size,value[3]+1,2)
@@ -65,9 +68,18 @@ module HCL
       end
       @cache[key] = [value[0],table]
     end
-    Marshal.dump(@cache,f)
-    f.close
+    Marshal.dump(@cache,f) if io
+    f.close if io
     @cache.each{|key, value|@cache[key] = [Bitmap.new(value[0]),value[1]]}
+  end
+  def self.loademitter(w)
+    f=File.open(w,"rb");@emitter=Marshal.load(f);f.close
+  end
+  def self.makeemitter(io)
+    f = File.open(io,"wb") if io
+    @emitter = $data_emitter
+    Marshal.dump(@emitter,f) if io
+    f.close if io
   end
 end
 class Game_Map
@@ -130,7 +142,7 @@ class Game_Player
   def update
     self_update
     if Input.press?(Input::A)
-      HCL.fire(screen_x,screen_y,"origin",rand(360))
+      HCL.fire(screen_x,screen_y,"origin",rand(45)*8)
     end
   end
 end
