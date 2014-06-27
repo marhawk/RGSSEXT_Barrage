@@ -1,9 +1,29 @@
+module Mouse
+  GetCursorPos = Win32API.new("user32", "GetCursorPos", 'p', 'i')
+  ScreenToClient = Win32API.new("user32", "ScreenToClient", 'ip', 'i')
+  GetActiveWindow = Win32API.new("user32", "GetActiveWindow", nil, 'l')
+  Window_HWND = GetActiveWindow.call
+  def self.pos
+    point_var = [0, 0].pack('ll')
+    if GetCursorPos.call(point_var) != 0
+      if ScreenToClient.call(Window_HWND, point_var) != 0
+        x, y = point_var.unpack('ll')
+        return x, y
+      else
+        return 0, 0
+      end
+    else
+      return 0, 0
+    end
+  end
+end
 module HCL
   class Particle < RPG::Sprite
     attr_accessor :main_route
     attr_accessor :stdx
     attr_accessor :stdy
     attr_accessor :style
+    attr_accessor :standpoint
     def initialize(viewport);super(viewport);@t=0;end
     def update
       if @t >= @main_route.ysize;self.x=self.y=-256;return;end
@@ -17,12 +37,19 @@ module HCL
   end
   def self.bullets;return @bullet;end
   def self.command_damage(w,event)
-    
+    w.each do |k|
+      if event.is_a?(Game_Player) && k.standpoint == 1
+        $scene = Scene_Gameover.new end
+      if event.is_a?(Game_Event) && k.standpoint == 0
+        $game_self_switches[[$game_map.map_id,event.id,'A']] = true
+        $game_map.need_refresh = true
+      end
+    end
   end
-  def self.superfire(x,y,route,emitter)
+  def self.superfire(x,y,route,emitter,standpoint)
     eval(sprintf(@emitter[emitter],x,y))
   end
-  def self.fire(x,y,route,style)
+  def self.fire(x,y,route,style,standpoint)
     return unless $scene.is_a?(Scene_Map)
     r = @cache[route]
     sprite = HCL::Particle.new($scene.spriteset.viewport1)
@@ -33,6 +60,7 @@ module HCL
     sprite.oy = sprite.bitmap.height
     sprite.main_route = r[1]
     sprite.style = style
+    sprite.standpoint = standpoint
     @bullet.push(sprite)
   end
   def self.update
@@ -137,12 +165,41 @@ class Game_Map
 end
 class Scene_Map    ;attr_accessor :spriteset;end
 class Spriteset_Map;attr_accessor :viewport1;end
+class Game_Event   ;attr_accessor :id       ;end
 class Game_Player
-  if @self_alias == nil;alias self_update update;@self_alias = true;end
   def update
-    self_update
-    if Input.press?(Input::A)
-      HCL.fire(screen_x,screen_y,"origin",rand(45)*8)
+    unless $game_system.map_interpreter.running? or
+           @move_route_forcing or $game_temp.message_window_showing
+      case Input.dir4
+      when 2
+        $game_map.scroll_down(4)
+      when 4
+        $game_map.scroll_left(4)
+      when 6
+        $game_map.scroll_right(4)
+      when 8
+        $game_map.scroll_up(4)
+      end
+      if Input.trigger?(Input::C)
+        check_event_trigger_here([0])
+        check_event_trigger_there([0,1,2])
+      end
+      if Input.press?(Input::A)
+        HCL.fire(screen_x,screen_y,"origin",rand(4)*90,0)
+      end
+    end
+    a,b = Mouse.pos
+    @real_x = (a - 16) * 4 - 3 + $game_map.display_x
+    @real_y = (b - 32) * 4 - 3 + $game_map.display_y
+    super
+  end        
+  def update_move
+    @x = @real_x / 128
+    @y = @real_y / 128
+    if @walk_anime
+      @anime_count += 1.5
+    elsif @step_anime
+      @anime_count += 1
     end
   end
 end
