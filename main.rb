@@ -17,6 +17,7 @@ module Mouse
     end
   end
 end
+
 module HCL
   class Particle < RPG::Sprite
     attr_accessor :main_route
@@ -36,6 +37,7 @@ module HCL
     def realy;return ((self.y - 32) * 4 - 3 + $game_map.display_y);end
   end
 end
+
 class HCl
   def bullets;return @bullet;end
   def command_damage(w,event)
@@ -126,6 +128,7 @@ class HCl
   end
 end
 $hcl = HCl.new
+
 class Game_Map
   if @self_alias == nil;alias self_update update;@self_alias = true;end
   def update;$hcl.update;self_update;end
@@ -179,9 +182,11 @@ class Game_Map
     end
   end
 end
+
 class Scene_Map    ;attr_accessor :spriteset;end
 class Spriteset_Map;attr_accessor :viewport1;end
 class Game_Event   ;attr_accessor :id       ;end
+  
 class Game_Player
   def update
     unless $game_system.map_interpreter.running? or
