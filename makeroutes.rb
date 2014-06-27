@@ -15,8 +15,8 @@ $data_routes = {
 
 }
 $data_emitter = {
-  "circle" => "(0..360).each{|s|self.fire(%d,%d,route,s)}",
-  "circle_std" => "(0..45).each{|s|self.fire(%d,%d,route,s*8)}",
+  "circle" => "(0..360).each{|s|self.fire(%d,%d,route,s,standpoint)}",
+  "circle_std" => "(0..30).each{|s|self.fire(%d,%d,route,s*12,standpoint)}",
 
 }
 HCL.makecache("Data/Routes.rxdata")
