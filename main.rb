@@ -1,3 +1,4 @@
+
 module Mouse
   GetCursorPos = Win32API.new("user32", "GetCursorPos", 'p', 'i')
   ScreenToClient = Win32API.new("user32", "ScreenToClient", 'ip', 'i')
