@@ -28,6 +28,7 @@ $data_emitter = {
   "circle_std" => "(0..30).each{|s|fire(%d,%d,route,s*12,standpoint)}",
 
 }
+
 $hcl.makecache("Data/Routes.rxdata")
 $hcl.loadcache("Data/Routes.rxdata")
 $hcl.makeemitter("Data/Emitter.rxdata")

@@ -18,6 +18,7 @@ module Mouse
     end
   end
 end
+
 Mouse::ShowCursor.call(0)
 
 module HCL
