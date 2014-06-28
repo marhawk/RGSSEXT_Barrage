@@ -22,7 +22,7 @@ end
 Mouse::ShowCursor.call(0)
 
 module HCL
-  class Particle < RPG::Sprite
+  class Particle < ::Sprite
     attr_accessor :main_route
     attr_accessor :stdx
     attr_accessor :stdy
